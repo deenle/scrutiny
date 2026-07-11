@@ -1,0 +1,29 @@
+services:
+  scrutiny:
+    restart: unless-stopped
+    container_name: scrutiny-dev
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: scrutiny-local:latest    
+    cap_add:
+      - SYS_RAWIO
+      - SYS_ADMIN
+    ports:
+      - "8082:8080" # webapp
+      - "8088:8086" # influxDB
+    healthcheck:
+      test: "curl -f -s http://localhost:8080/api/health"
+    environment:
+      SCRUTINY_LOG_LEVEL: WARN
+      COLLECTOR_LOG_LEVEL: WARN
+    volumes:
+      - /run/udev:/run/udev:ro
+      - ${SCRUTINY_CONFIG_PATH:-./config/dev}:/opt/scrutiny/config
+      - ${SCRUTINY_INFLUXDB_PATH:-./influxdb/dev}:/opt/scrutiny/influxdb
+    devices:
+      - "/dev/sda"
+      - "/dev/sdb"
+      - "/dev/sdc"
+      - "/dev/nvme0"
+      - "/dev/nvme1"
